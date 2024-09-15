@@ -1,0 +1,21 @@
+User Module:
+- Login - /login
+- Register - /signup
+- Verify Account - /verify
+- Send Reset - /initiate-reset
+- Reset Password - /reset
+- User Profile - /profile?email=test@test.com
+- Update Profile - /profile?email=test@test.com
+- Delete Account - /profile?email=test@test.com
+- Update Preferences - /preferences
+- Create Preferences - /preferences
+
+
+- Create User Topics - /topics
+- Update user Topics - /topics
+- Delete User Topics - /topics
+
+
+- Standard User features (100 USD) every 10m increase 1 USD
+- Business User -
+- User can either be premium or Standard

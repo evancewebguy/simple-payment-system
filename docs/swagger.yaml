@@ -1,0 +1,469 @@
+definitions:
+  common.BaseResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  common.ErrorResponse:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  user.CreateUpdateUserAccountPreferenceDto:
+    properties:
+      email_preferences:
+        type: boolean
+      notifications:
+        type: boolean
+      personalize_content:
+        type: boolean
+    type: object
+  user.InitiateResetPasswordRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  user.ProviderType:
+    enum:
+    - google
+    - facebook
+    - apple
+    - email
+    type: string
+    x-enum-varnames:
+    - ProviderEmail
+  user.RefreshToken:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  user.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+      otp:
+        type: string
+      password:
+        type: string
+    type: object
+  user.SignInRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      provider:
+        allOf:
+        - $ref: '#/definitions/user.ProviderType'
+        enum:
+        - email
+        - google
+        - facebook
+        - apple
+      token:
+        description: Optional, used if social login
+        type: string
+    required:
+    - provider
+    type: object
+  user.SignUpRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      provider:
+        allOf:
+        - $ref: '#/definitions/user.ProviderType'
+        enum:
+        - email
+        - google
+        - facebook
+        - apple
+      token:
+        type: string
+    required:
+    - provider
+    type: object
+  user.UpdateUserProfileRequest:
+    properties:
+      email:
+        type: string
+      email_preferences:
+        type: boolean
+      full_name:
+        type: string
+      is_active:
+        type: boolean
+      language:
+        type: string
+      notifications:
+        type: boolean
+      personalize_content:
+        type: boolean
+      phone_number:
+        type: string
+    type: object
+  user.VerifyUserRequest:
+    properties:
+      email:
+        type: string
+      otp:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/initiate-reset:
+    post:
+      consumes:
+      - application/json
+      description: Sends a password reset token to the user's email
+      parameters:
+      - description: Email Address
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/user.InitiateResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Send a password reset token
+      tags:
+      - Authentication
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token
+      parameters:
+      - description: Sign In Request
+        in: body
+        name: SignInRequest
+        required: true
+        schema:
+          $ref: '#/definitions/user.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Log in a user
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user account and sends a verification email
+      parameters:
+      - description: Sign Up Request
+        in: body
+        name: SignUpRequest
+        required: true
+        schema:
+          $ref: '#/definitions/user.SignUpRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets a user's password using the reset token
+      parameters:
+      - description: Reset Password Request
+        in: body
+        name: resetRequest
+        required: true
+        schema:
+          $ref: '#/definitions/user.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Reset a user's password
+      tags:
+      - Authentication
+  /auth/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verifies a user's account using a verification token
+      parameters:
+      - description: Verification Request
+        in: body
+        name: VerifyUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/user.VerifyUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Verify a user's account
+      tags:
+      - Authentication
+  /users/preferences:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to create account preferences if they don't exist
+      parameters:
+      - description: Create Preferences Request
+        in: body
+        name: preferences
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUpdateUserAccountPreferenceDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Create user account preferences
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Allows a user to update their account preferences
+      parameters:
+      - description: Update Preferences Request
+        in: body
+        name: preferences
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUpdateUserAccountPreferenceDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Update a user's account preferences
+      tags:
+      - Users
+  /users/profile:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a user's account profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Delete a user's account profile
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the details of a user's account profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Get a user's account profile
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Allows a user to update their account profile details
+      parameters:
+      - description: Update Profile Request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Update a user's account profile
+      tags:
+      - Users
+  /users/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new authentication token using the refresh token
+      parameters:
+      - description: Update Profile Request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.RefreshToken'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+      summary: Refresh the user's authentication token
+      tags:
+      - Users
+swagger: "2.0"
